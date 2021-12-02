@@ -158,14 +158,14 @@ public class SecureEntity {
     }
 
 
-    public void createTrustStore(String format, String trustStoreName, File directory){
+    public void createTrustStore(String format, String trustStoreName, String password, File directory){
         FileOutputStream out=null;
         try {
             trustStore = KeyStore.getInstance(format);
             trustStore.load(null, null);
 
             out = new FileOutputStream(directory.getAbsolutePath()+"\\"+trustStoreName+"."+format);
-            trustStore.store(out, null);
+            trustStore.store(out, password.toCharArray());
             out.close();
         } catch (KeyStoreException  | CertificateException | NoSuchAlgorithmException e) {
             e.printStackTrace();

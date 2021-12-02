@@ -1,5 +1,4 @@
 import protocol.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.security.*;
@@ -10,9 +9,13 @@ public class Main {
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, KeyStoreException, CertificateException, KeyManagementException, UnrecoverableKeyException {
 
+        CertificateGenerator generator = new CertificateGenerator();
 
         //TODO: create CA certificate
-        Certificate CA_Certificate = createCACertificate();
+        SecureRandom CA_random = new SecureRandom();
+        KeyPair CA_keyPair = generator.generateKeyPair("RSA", 2048, CA_random);
+        Certificate CA_Certificate = generator.generateCertificate("SHA256withRSA", CA_random, CA_keyPair, "DubaiEXPO", 365);
+
 
 
         //create & initialize SecureEntity object
@@ -24,12 +27,20 @@ public class Main {
             directory.mkdirs();
 
         secureEntity.createKeyStore("jks", "STORE", "123", directory);
-        secureEntity.createTrustStore("jks", "TRUST", directory);
+        secureEntity.createTrustStore("jks", "TRUST", "123", directory);
+
 
         //load certificates (create first if necessary)
+        SecureRandom random = new SecureRandom();
+        KeyPair subjectKeyPair = generator.generateKeyPair("RSA", 2048, random);
+        Certificate randomCertificate = generator.generateCertificate("SHA256WithRSA", random, subjectKeyPair, "server", "DubaiEXPO", CA_keyPair.getPrivate(), 365);
+
+        secureEntity.getKeyStore().setKeyEntry("randomCertificate", subjectKeyPair.getPrivate(), "123".toCharArray(), new Certificate[]{randomCertificate});
+        secureEntity.getTrustStore().setCertificateEntry("DubaiEXPO", CA_Certificate);
+
 
         //setup SSL
-        secureEntity.setupSSL();
+         //secureEntity.setupSSL();
 
         //connect (or listen)
 
@@ -37,17 +48,6 @@ public class Main {
 
         //communicate
 
-
-    }
-
-
-
-    public static Certificate createCACertificate(){
-        CertificateGenerator generator = new CertificateGenerator();
-        SecureRandom random = new SecureRandom();
-
-        generator.generateKeyPair("RSA", 2048, random);
-        return generator.generateCertificate("SHA256withRSA", random, "DubaiEXPO", 365);
 
     }
 

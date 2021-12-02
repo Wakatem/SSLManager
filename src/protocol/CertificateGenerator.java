@@ -5,6 +5,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -16,9 +17,9 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class CertificateGenerator {
-    private KeyPair keyPair;
 
     public CertificateGenerator(){}
 
@@ -32,19 +33,19 @@ public class CertificateGenerator {
             return null;
         }
         generator.initialize(keySize, random);
-        keyPair = generator.generateKeyPair();
+        return generator.generateKeyPair();
 
-        return keyPair;
     }
 
 
     //self-signed generated certificate
-    public X509Certificate generateCertificate(String signatureAlgorithm, SecureRandom random, String commonName, int duration){
+    public X509Certificate generateCertificate(String signatureAlgorithm, SecureRandom random, KeyPair keyPair, String commonName, int duration){
 
-        Date notBefore=null;
-        Date notAfter = null;
+        Date notBefore=getDates(duration)[0];
+        Date notAfter = getDates(duration)[1];
         X500Name user = new X500Name("CN="+commonName);
-        X509v3CertificateBuilder builder = new X509v3CertificateBuilder(user, new BigInteger(64, random), notBefore, notAfter, user, (SubjectPublicKeyInfo) keyPair.getPublic());
+        SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
+        X509v3CertificateBuilder builder = new X509v3CertificateBuilder(user, new BigInteger(64, random), notBefore, notAfter, user, keyInfo);
 
         //create signer
         JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithm);
@@ -65,13 +66,14 @@ public class CertificateGenerator {
     }
 
     //issuer-based generated certificate
-    public X509Certificate generateCertificate(String signatureAlgorithm, SecureRandom random, String subjectCommonName, String issuerCommonName, PublicKey CAkey, int duration){
+    public X509Certificate generateCertificate(String signatureAlgorithm, SecureRandom random, KeyPair subjectKeyPair, String subjectCommonName, String issuerCommonName, PrivateKey CAkey, int duration){
 
-        Date notBefore=null;
-        Date notAfter = null;
+        Date notBefore=getDates(duration)[0];
+        Date notAfter = getDates(duration)[1];
         X500Name user = new X500Name("CN="+subjectCommonName);
         X500Name CA = new X500Name("CN="+issuerCommonName);
-        X509v3CertificateBuilder builder = new X509v3CertificateBuilder(user, new BigInteger(64, random), notBefore, notAfter, CA, (SubjectPublicKeyInfo) CAkey);
+        SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(subjectKeyPair.getPublic().getEncoded());
+        X509v3CertificateBuilder builder = new X509v3CertificateBuilder(user, new BigInteger(64, random), notBefore, notAfter, CA, keyInfo);
 
         //create signer
         JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithm);
@@ -79,7 +81,7 @@ public class CertificateGenerator {
         X509Certificate certificate = null;
 
         try {
-            signer = signerBuilder.build(keyPair.getPrivate());
+            signer = signerBuilder.build(CAkey);
             X509CertificateHolder holder = builder.build(signer);
             certificate = new JcaX509CertificateConverter().setProvider(new BouncyCastleProvider()).getCertificate(holder);
         } catch (OperatorCreationException e) {
@@ -91,9 +93,13 @@ public class CertificateGenerator {
         return certificate;
     }
 
-    private Date[] getDates(Date duration){
+    private Date[] getDates(int duration){
 
-        return null;
+        Date notBefore = new Date(System.currentTimeMillis());
+        long afterValue = TimeUnit.DAYS.toMillis(duration);
+        Date notAfter = new Date(afterValue);
+
+        return new Date[]{notBefore, notAfter};
     }
 
 }
