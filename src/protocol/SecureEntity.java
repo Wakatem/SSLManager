@@ -185,7 +185,7 @@ public class SecureEntity {
         trustManagerFactory.init(trustStore);
 
         //create SSLContext
-        sslContext = SSLContext.getInstance("TLS");
+        sslContext = SSLContext.getInstance("TLSv1.2");
         sslContext.init(keyMangerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
 
         //create SSLEngine
@@ -196,7 +196,7 @@ public class SecureEntity {
         int netBufferSize = engine.getSession().getPacketBufferSize();
 
         myAppData   = ByteBuffer.allocate(appBufferSize);
-        myNetData   = ByteBuffer.allocate(appBufferSize);
+        myNetData   = ByteBuffer.allocate(netBufferSize);
         peerAppData = ByteBuffer.allocate(appBufferSize);
         peerNetData = ByteBuffer.allocate(netBufferSize);
 

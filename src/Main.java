@@ -11,7 +11,7 @@ public class Main {
 
         CertificateGenerator generator = new CertificateGenerator();
 
-        //TODO: create CA certificate
+        //create CA certificate
         SecureRandom CA_random = new SecureRandom();
         KeyPair CA_keyPair = generator.generateKeyPair("RSA", 2048, CA_random);
         Certificate CA_Certificate = generator.generateCertificate("SHA256withRSA", CA_random, CA_keyPair, "DubaiEXPO", 365);
@@ -33,14 +33,15 @@ public class Main {
         //load certificates (create first if necessary)
         SecureRandom random = new SecureRandom();
         KeyPair subjectKeyPair = generator.generateKeyPair("RSA", 2048, random);
-        Certificate randomCertificate = generator.generateCertificate("SHA256WithRSA", random, subjectKeyPair, "server", "DubaiEXPO", CA_keyPair.getPrivate(), 365);
+        Certificate randomCertificate = generator.generateCertificate("SHA256WithRSA", random, subjectKeyPair, "localhost", "DubaiEXPO", CA_keyPair.getPrivate(), 365);
 
-        secureEntity.getKeyStore().setKeyEntry("randomCertificate", subjectKeyPair.getPrivate(), "123".toCharArray(), new Certificate[]{randomCertificate});
+        secureEntity.getKeyStore().setKeyEntry("randomCertificate", subjectKeyPair.getPrivate(), "123".toCharArray(), new Certificate[]{randomCertificate, CA_Certificate});
         secureEntity.getTrustStore().setCertificateEntry("DubaiEXPO", CA_Certificate);
 
 
+
         //setup SSL
-         //secureEntity.setupSSL();
+         secureEntity.setupSSL();
 
         //connect (or listen)
 
@@ -50,6 +51,7 @@ public class Main {
 
 
     }
+
 
 
 

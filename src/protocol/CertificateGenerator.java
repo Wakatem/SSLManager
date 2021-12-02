@@ -70,10 +70,10 @@ public class CertificateGenerator {
 
         Date notBefore=getDates(duration)[0];
         Date notAfter = getDates(duration)[1];
-        X500Name user = new X500Name("CN="+subjectCommonName);
+        X500Name subject = new X500Name("CN="+subjectCommonName);
         X500Name CA = new X500Name("CN="+issuerCommonName);
         SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(subjectKeyPair.getPublic().getEncoded());
-        X509v3CertificateBuilder builder = new X509v3CertificateBuilder(user, new BigInteger(64, random), notBefore, notAfter, CA, keyInfo);
+        X509v3CertificateBuilder builder = new X509v3CertificateBuilder(CA, new BigInteger(64, random), notBefore, notAfter, subject, keyInfo);
 
         //create signer
         JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithm);
@@ -96,7 +96,7 @@ public class CertificateGenerator {
     private Date[] getDates(int duration){
 
         Date notBefore = new Date(System.currentTimeMillis());
-        long afterValue = TimeUnit.DAYS.toMillis(duration);
+        long afterValue = TimeUnit.DAYS.toMillis(duration) + notBefore.getTime();
         Date notAfter = new Date(afterValue);
 
         return new Date[]{notBefore, notAfter};
