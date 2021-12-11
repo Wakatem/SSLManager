@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact name="sharedProtocolAssignment:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/sharedProtocolAssignment_jar</output-path>
+    <root id="root">
+      <element id="archive" name="sharedProtocolAssignment.jar">
+        <element id="module-output" name="sharedProtocolAssignment" />
+      </element>
+      <element id="library" level="project" name="bcpkix-jdk15to18-170" />
+      <element id="library" level="project" name="bcprov-jdk15to18-170" />
+      <element id="library" level="project" name="bcutil-jdk15to18-170" />
+    </root>
+  </artifact>
+</component>

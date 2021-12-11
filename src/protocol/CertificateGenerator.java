@@ -39,7 +39,7 @@ public class CertificateGenerator {
 
 
     //self-signed generated certificate
-    public X509Certificate generateCertificate(String signatureAlgorithm, SecureRandom random, KeyPair keyPair, String commonName, int duration){
+    public X509Certificate generateSelfSignedCert(String signatureAlgorithm, SecureRandom random, KeyPair keyPair, String commonName, int duration){
 
         Date notBefore=getDates(duration)[0];
         Date notAfter = getDates(duration)[1];
@@ -66,7 +66,7 @@ public class CertificateGenerator {
     }
 
     //issuer-based generated certificate
-    public X509Certificate generateCertificate(String signatureAlgorithm, SecureRandom random, KeyPair subjectKeyPair, String subjectCommonName, String issuerCommonName, PrivateKey CAkey, int duration){
+    public X509Certificate generateSignedCertificate(String signatureAlgorithm, SecureRandom random, KeyPair subjectKeyPair, String subjectCommonName, String issuerCommonName, PrivateKey CAkey, int duration){
 
         Date notBefore=getDates(duration)[0];
         Date notAfter = getDates(duration)[1];

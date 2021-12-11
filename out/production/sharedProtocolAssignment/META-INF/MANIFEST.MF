@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Main-Class: Main
+Class-Path: bcpkix-jdk15to18-170.jar bcprov-jdk15to18-170.jar bcutil-jdk
+ 15to18-170.jar
+
