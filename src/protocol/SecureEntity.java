@@ -9,6 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
@@ -168,6 +169,7 @@ public class SecureEntity {
         peerData = ByteBuffer.allocate(appBufferSize);
         localData = ByteBuffer.allocate(appBufferSize);
         networkData = ByteBuffer.allocate(netBufferSize);
+
     }
 
 
@@ -179,12 +181,12 @@ public class SecureEntity {
 
             while (handshakeStatus != SSLEngineResult.HandshakeStatus.FINISHED && handshakeStatus != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING) {
 
-                if (handshakeStatus == SSLEngineResult.HandshakeStatus.NEED_WRAP){
+                if (handshakeStatus == SSLEngineResult.HandshakeStatus.NEED_WRAP) {
                     operateSSLEngine(true, EngineOperation.WRAP);
                     runDelegatedTasks();
                     handshakeStatus = engine.getHandshakeStatus();
 
-                }else if (handshakeStatus == SSLEngineResult.HandshakeStatus.NEED_UNWRAP){
+                } else if (handshakeStatus == SSLEngineResult.HandshakeStatus.NEED_UNWRAP) {
                     operateSSLEngine(true, EngineOperation.UNWRAP);
                     runDelegatedTasks();
                     handshakeStatus = engine.getHandshakeStatus();
@@ -211,46 +213,56 @@ public class SecureEntity {
         SSLEngineResult result;
 
         if (operation == EngineOperation.WRAP) {
-            localData.flip();
 
             //encrypt data and store in networkData buffer
+            localData.flip();
             result = engine.wrap(localData, networkData);
-            if (inHandshakeStage)
-                successfulHandshake = (result.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.FINISHED);
             localData.compact();
 
-
-            //send data to peer
+            //send encrypted data to peer
             networkData.flip();
-            outputPipe.writeUTF("b:" + String.valueOf(networkData.limit())); //size of sent message
             while (networkData.hasRemaining()) {
                 outputPipe.write(networkData.get());
                 outputPipe.flush();
             }//while
 
+            if (inHandshakeStage)
+                successfulHandshake = (result.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.FINISHED);
+            else
+                //outputPipe.write("/sent".getBytes());
+
+            //enable write mode
+            networkData.compact();
 
         } else {
 
-            //read next handshake message
-            int expectedSize = Integer.parseInt(inputPipe.readUTF().substring(2));
-            int readBytesCounter = 0;
-            while (readBytesCounter != expectedSize) {
-                networkData.put((byte) inputPipe.read());
-                readBytesCounter++;
+            if (inHandshakeStage) {
+                //read next handshake message
+                do {
+                    networkData.put((byte) inputPipe.read());
+                    networkData.flip();
+                    result = engine.unwrap(networkData, peerData);  //decrypt data and store in peerData buffer
+                    networkData.compact();
+
+                } while (result.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW);
+                successfulHandshake = (result.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.FINISHED);
+
+            } else {
+
+                do {
+                    networkData.put((byte) inputPipe.read());
+                    networkData.flip();
+                    result = engine.unwrap(networkData, peerData);  //decrypt data and store in peerData buffer
+                    networkData.compact();
+
+                }while (result.getStatus() != SSLEngineResult.Status.OK);
+
             }
 
-
-            //decrypt data and store in peerData buffer
-            networkData.flip();
-            result = engine.unwrap(networkData, peerData);
-            if (inHandshakeStage)
-                successfulHandshake = (result.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.FINISHED);
 
         }
 
 
-        //enable write mode
-        networkData.compact();
         //empty network buffer
         networkData.clear();
 
@@ -267,7 +279,6 @@ public class SecureEntity {
             } else {
                 //System.out.println("task needed");
                 runnable.run();
-                //System.out.println("Handshake after task: " + engine.getHandshakeStatus());
 
             }
         }
@@ -298,23 +309,31 @@ public class SecureEntity {
     }
 
 
-    private byte[] readBytes() {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-
+    public void sendMessage(String message){
+        localData.clear();
+        localData.put(message.getBytes());
         try {
-            byte holder = 'o';
-            while ((holder = (byte) inputPipe.read()) != '@') {
-                outputStream.write(holder);
-            }
+            operateSSLEngine(false, EngineOperation.WRAP);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    public String readMessage(){
+        peerData.clear();
+        try {
+            operateSSLEngine(false, EngineOperation.UNWRAP);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        peerData.flip();
+        byte[] messageBytes = new byte[peerData.limit()];
+        peerData.get(messageBytes);
 
-        return outputStream.toByteArray();
+        return new String(messageBytes);
     }
+
 }
 
 

@@ -111,7 +111,7 @@ public class Main {
             truststoreOut.close();
 
             //connect (or listen)
-            secureEntity.listen(34690);
+            secureEntity.listen(443);
 
             //setup SSL
             secureEntity.setupSSL();
@@ -134,7 +134,7 @@ public class Main {
                 public void run() {
                     try {
                         while (secureEntity.getMainSocket().isConnected()) {
-                            //System.out.println(secureEntity.getInputPipe().readUTF());
+                            System.out.println(secureEntity.readMessage());
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -172,7 +172,7 @@ public class Main {
 
 
             //connect (or listen)
-            secureEntity.connect("localhost", 34690);
+            secureEntity.connect("localhost", 443);
 
             //setup SSL
             secureEntity.setupSSL();
@@ -193,23 +193,17 @@ public class Main {
                 @Override
                 public void run() {
                     Scanner scanner = new Scanner(System.in);
-                    String message;
-                    try {
-                        while (secureEntity.getMainSocket().isConnected()) {
-                            message = scanner.nextLine();
-                            secureEntity.getOutputPipe().write(2);
-                        }
+                    while (secureEntity.getMainSocket().isConnected()) {
+                        secureEntity.sendMessage(scanner.nextLine());
+                    }
 
+                    try {
+                        secureEntity.getInputPipe().close();
+                        secureEntity.getOutputPipe().close();
                     } catch (IOException e) {
                         e.printStackTrace();
-                    } finally {
-                        try {
-                            secureEntity.getInputPipe().close();
-                            secureEntity.getOutputPipe().close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
                     }
+
                 }
             }).start();
         }
