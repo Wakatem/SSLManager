@@ -1,9 +1,10 @@
-/shelf/
 /src/META-INF
 /out
 /CA.crt
 /privatekey.key
-/.idea/artificats
-/discord.xml
-/uiDesigner.xml
-/workspace.xml
+/.idea/artifacts
+/.idea/discord.xml
+/.idea/uiDesigner.xml
+/.idea/workspace.xml
+/.idea/inspectionProfiles/
+/.idea/shelf/
