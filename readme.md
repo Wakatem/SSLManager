@@ -27,7 +27,7 @@ manager.createTrustStore("jks", "clientTRUST", "", directory);
 
 <br/>
 
-`addTrustedCertificates` & `addLocalCertificates` methods accept a hashmap. A single entry consists of a key that corresponds to the alias the certificate is going to be added as, and a value of type `Certificate` or `LocalCertificate` that corresponds to the certificate/certificate chain being added.
+`addTrustedCertificates` and `addLocalCertificates` methods accept a hashmap. A single entry consists of a key that corresponds to the alias the certificate is going to be added as, and a value of type `Certificate` or `LocalCertificate` that corresponds to the certificate/certificate chain being added.
 ```java
 manager.createTrustStore("jks", "clientTRUST", "", directory);
 HashMap<String, Certificate> trustedCA = new HashMap<>();
