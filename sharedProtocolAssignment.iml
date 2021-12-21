@@ -7,8 +7,5 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="bcpkix-jdk15to18-170" level="project" />
-    <orderEntry type="library" exported="" name="bcprov-jdk15to18-170" level="project" />
-    <orderEntry type="library" exported="" name="bcutil-jdk15to18-170" level="project" />
   </component>
 </module>
