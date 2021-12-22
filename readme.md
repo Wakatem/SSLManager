@@ -63,7 +63,7 @@ byte[] decryptedData = manager.decrypt(stream.toByteArray());
 
 ## More Info 
 
-The current version of the library supports one-way SSL and provides the basics. More features will be implemented with time. The project is built with OpenJDK 17.0.1 on Intellij IDEA and provides an example demonstrating the use of the library. An exported jar file of the library is also available in
+The current version of the library supports one-way SSL and provides the basics. More features will be implemented with time. The project is built with OpenJDK 17.0.1 on Intellij IDEA and provides an example demonstrating the use of the library. To run the example, a server certificate and private key, and a trusted certificate for the client side must be provided. An exported jar file of the library is also available in
 *[exported](/exported)* folder.
 
 <br/>
