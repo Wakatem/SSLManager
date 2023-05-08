@@ -72,5 +72,3 @@ The current version of the library supports one-way SSL and provides the basics.
 
 - [JSSE Documentation](https://docs.oracle.com/javase/8/docs/technotes/guides/security/jsse/JSSERefGuide.html)  
 
-- [Something I like](https://youtu.be/1tk1pqwrOys) &nbsp;&nbsp;(￣_,￣ )
-
